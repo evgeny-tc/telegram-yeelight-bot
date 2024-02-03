@@ -4,7 +4,7 @@ import time
 import ipaddress
 
 from config_reader import config
-from aiogram import Bot, Dispatcher, types, html, F
+from aiogram import Bot, Dispatcher, types, html
 from aiogram.filters.command import Command, CommandObject
 from aiogram.types import Message
 
@@ -34,25 +34,6 @@ async def cmd_start(message: types.Message):
     await render_button(message)
 
 
-@dp.message(F.text.lower() == "включить")
-@dp.message(F.text.lower() == "выключить")
-async def bulb_turn(message: types.Message):
-    global YeelightConnect
-    try:
-        if YeelightConnect is None:
-            raise Exception("сначала укажите ip")
-
-        if message.text.lower() == "включить":
-            YeelightConnect.turn_on()
-        else:
-            YeelightConnect.turn_off()
-
-    except Exception as err:
-        await message.answer(
-            "❌ Ошибка: " + str(err)
-        )
-
-
 @dp.message(Command("ip"))
 async def input_ip(
         message: Message,
@@ -66,10 +47,6 @@ async def input_ip(
         )
         return
 
-    await message.answer(
-        "✅ IP сохранен"
-    )
-
     try:
         YeelightConnect = Bulb(strIP)
 
@@ -78,6 +55,10 @@ async def input_ip(
         time.sleep(1)
 
         YeelightConnect.toggle()
+
+        await message.answer(
+            "💡"
+        )
 
         await message.answer(
             "✅ Подключение выполнено"
@@ -91,12 +72,39 @@ async def input_ip(
         )
 
 
+@dp.message()
+async def bulb_turn(message: types.Message):
+    global YeelightConnect
+    try:
+        if YeelightConnect is None:
+            raise Exception("подключение не выполнено ip")
+
+        if message.text.lower() == "включить":
+            YeelightConnect.turn_on()
+        elif message.text.lower() == "выключить":
+            YeelightConnect.turn_off()
+        elif int(message.text.replace('%', '')):
+            YeelightConnect.set_brightness(int(message.text.replace('%', '')))
+
+    except Exception as err:
+        await message.answer(
+            "❌ Ошибка: " + str(err)
+        )
+
+
 async def render_button(message):
     kb = [
         [
+            types.KeyboardButton(text="20%"),
+            types.KeyboardButton(text="40%"),
+            types.KeyboardButton(text="50%"),
+            types.KeyboardButton(text="70%"),
+            types.KeyboardButton(text="100%"),
+        ],
+        [
             types.KeyboardButton(text="Включить"),
             types.KeyboardButton(text="Выключить")
-        ],
+        ]
     ]
 
     keyboard = types.ReplyKeyboardMarkup(
