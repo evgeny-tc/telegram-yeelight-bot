@@ -73,11 +73,17 @@ async def input_ip(
 
 
 @dp.message()
-async def bulb_turn(message: types.Message):
+async def bulb_turn(message: types.Message, reconnect=False):
     global YeelightConnect
     try:
         if YeelightConnect is None:
-            raise Exception("подключение не выполнено ip")
+            raise Exception("Подключение не выполнено")
+
+        if reconnect:
+            await message.answer(
+                "📡 Переподключение"
+            )
+            time.sleep(1)
 
         if message.text.lower() == "включить":
             YeelightConnect.turn_on()
@@ -87,6 +93,10 @@ async def bulb_turn(message: types.Message):
             YeelightConnect.set_brightness(int(message.text.replace('%', '')))
 
     except Exception as err:
+        if not reconnect:
+            await bulb_turn(message, True)
+            return
+
         await message.answer(
             "❌ Ошибка: " + str(err)
         )
