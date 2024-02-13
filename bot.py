@@ -80,9 +80,6 @@ async def bulb_turn(message: types.Message, reconnect=False):
             raise Exception("Подключение не выполнено")
 
         if reconnect:
-            await message.answer(
-                "📡 Переподключение"
-            )
             time.sleep(1)
 
         if message.text.lower() == "включить":
