@@ -77,7 +77,7 @@ async def bulb_turn(message: types.Message, reconnect=False):
     global YeelightConnect
     try:
         if YeelightConnect is None:
-            raise Exception("Подключение не выполнено")
+            raise Exception("Подключение не выполнено, укажите /ip")
 
         if reconnect:
             time.sleep(1)
